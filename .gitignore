@@ -1,24 +1,27 @@
-# .gitignore
+# Maven
 target/
-!.mvn/wrapper/maven-wrapper.jar
-log/
-*.class
-
-# IntelliJ IDEA
-.idea/
-*.iws
-*.iml
-*.ipr
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.restore
+release.properties
 
 # Eclipse
+.settings/
 .project
 .classpath
-.settings/
+.factorypath
 
-# Mac
-.DS_Store
-
-# Visual Studio Code
+# VS Code
 .vscode/
 *.code-workspace
-bin/
+
+# Java 
+*.class
+*.log
+*.jar
+*.war
+
+# OS 
+.DS_Store
+Thumbs.db
