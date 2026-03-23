@@ -1,0 +1,62 @@
+@startuml network-programming
+!theme spacelab
+skinparam componentStyle uml2
+
+title Kiến trúc Hệ thống Lập trình mạng - Xử lý Ma trận (Socket/Struct)
+
+package "Client (C/C++/Java)" {
+    [Giao diện Nhập liệu] as CLI
+    [Đóng gói Struct/Byte Stream\n(Opcode, Rows, Cols, Data)] as PacketBuilder
+    [TCP Socket (connect, send, recv)] as ClientTCP
+    [UDP Socket (sendto, recvfrom)] as ClientUDP
+    
+    CLI --> PacketBuilder : Nhập 1-2 ma trận & Phép toán
+    PacketBuilder --> ClientTCP : Chọn chế độ TCP
+    PacketBuilder --> ClientUDP : Chọn chế độ UDP
+}
+
+package "Server (Lắng nghe đa giao thức)" {
+    [TCP Socket (bind, listen)] as ServerTCP
+    [UDP Socket (bind)] as ServerUDP
+    
+    node "Mô hình Xử lý (Dispatcher)" as Dispatcher {
+        [Chế độ Lặp (Iterative)\n- Vòng lặp while(1) tuần tự\n- Chặn (Block) các client khác] as Iterative
+        [Chế độ Đồng thời (Concurrent)\n- fork() tạo Child Process (C/Linux)\n- pthread tạo Luồng mới (C/Java)] as Concurrent
+    }
+    
+    folder "Core Logic (Xử lý 10 chức năng)" {
+        [Trích xuất Struct (Unpack)] as Unpacker
+        [Thư viện Đại số (10 hàm)\n(add, mul, inv, det, rank...)] as MathEngine
+    }
+    
+    ServerTCP --> Dispatcher : accept() trả về Client_Socket
+    ServerUDP --> Dispatcher : recvfrom() nhận Datagram
+    
+    Dispatcher --> Iterative : Cấu hình Server Lặp
+    Dispatcher --> Concurrent : Cấu hình Server Đồng thời
+    
+    Iterative --> Unpacker
+    Concurrent --> Unpacker : (Mỗi tiến trình/luồng chạy độc lập)
+    
+    Unpacker --> MathEngine : Gọi hàm toán học tương ứng (Dựa vào Opcode)
+}
+
+' Mũi tên mạng (Network Layer)
+ClientTCP ==> ServerTCP : Kết nối TCP (Stream)
+ClientUDP ...> ServerUDP : Gói tin UDP (Datagram)
+
+' Trả kết quả
+MathEngine --> ClientTCP : send() kết quả (Mảng Byte)
+MathEngine --> ClientUDP : sendto() kết quả (Mảng Byte)
+
+note top of PacketBuilder
+  Dữ liệu truyền qua mạng phải là mảng Byte.
+  Ví dụ struct trong C:
+  struct Request {
+      int opcode; // 1-10
+      int row1, col1;
+      float mat1[100];
+      // ...
+  };
+end note
+@enduml
