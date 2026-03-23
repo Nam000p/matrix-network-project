@@ -1,0 +1,19 @@
+# .gitignore
+target/
+!.mvn/wrapper/maven-wrapper.jar
+log/
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Mac
+.DS_Store
