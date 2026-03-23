@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  matrix-server:
+    build: ./server
+    container_name: matrix-server
+    ports:
+      - "65432:65432"
+    networks:
+      - matrix-net
+
+  matrix-client:
+    build: ./client
+    container_name: matrix-client
+    environment:
+      - SERVER_HOST=matrix-server 
+    depends_on:
+      - matrix-server
+    stdin_open: true
+    tty: true
+    networks:
+      - matrix-net
+
+networks:
+  matrix-net:
+    driver: bridge
