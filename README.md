@@ -48,16 +48,21 @@ cd client
 mvn exec:java "-Dexec.mainClass=com.network.client.ClientTCP"
 ```
 
-## 5. Chạy bằng Docker (Khuyên dùng)
+## 5. Triển khai bằng Docker (Khuyên dùng)
 
-Hệ thống đã được cấu hình sẵn Docker Compose để triển khai nhanh.
+Hệ thống đã được tối ưu hóa bằng **Biến môi trường (Environment Variables)** và **Unified Launcher**, giúp tự động cấu hình và hỗ trợ cả hai giao thức TCP/UDP cùng lúc.
 
-**Bước 1: Đóng gói file JAR**
+**Bước 1: Đóng gói ứng dụng (Fat JAR)**
+
+Tại thư mục gốc dự án, chạy lệnh để Maven gom tất cả thư viện (Gson) và logic vào file JAR:
+
 ```PowerShell
 mvn clean package -DskipTests
 ```
 
-**Bước 2: Khởi động Containers***
+**Bước 2: Khởi động hệ thống Containers**
+
+Lệnh này sẽ build lại Image từ code mới nhất và chạy Server ở chế độ ngầm (Background). Server sẽ tự động mở cổng **65432 (TCP)** và **65433 (UDP)**.
 
 ```PowerShell
 docker-compose up --build -d
@@ -65,23 +70,37 @@ docker-compose up --build -d
 
 **Bước 3: Tương tác với Client**
 
-Vì Client chạy trong container, dùng lệnh sau để vào giao diện nhập liệu:
+Thay vì dùng `attach` dễ gây lỗi bộ đệm nhập liệu, hãy sử dụng lệnh `run` để tạo một phiên làm việc tương tác (Interactive) sạch sẽ:
 
 ```PowerShell
-docker attach matrix-client
+docker-compose run --rm matrix-client
 ```
 
-## 6. Các tính năng hỗ trợ
+**Tại sao nên dùng lệnh này?**
 
-Hệ thống hỗ trợ 10 phép toán ma trận từ cơ bản đến nâng cao:
+- `--rm`: Tự động xóa container rác sau khi thoát menu.
 
-- **Nhóm cơ bản:** Cộng, Trừ, Nhân (2 ma trận), Nhân vô hướng (Scalar).
+- Hệ thống sẽ hiện Menu chọn Giao thức ngay khi khởi động. Ta chỉ cần chọn 1 (TCP) hoặc 2 (UDP) để bắt đầu tính toán.
 
-- **Nhóm đặc trưng:** Chuyển vị, Tính vết (Trace), Kiểm tra đối xứng.
+## 6. Cơ chế Kỹ thuật nổi bật
 
-- **Nhóm nâng cao:** Tính định thức (Determinant), Nghịch đảo (Inverse), Tính hạng (Rank).
+- **Đa giao thức (Dual-Stack)**: Server sử dụng Multi-threading để lắng nghe đồng thời trên cả TCP và UDP.
+
+- **Tự động cấu hình**: Client sử dụng biến môi trường `SERVER_HOST`.
+
+    - Khi chạy Docker: Tự nhận diện server qua tên dịch vụ `matrix-server`.
+
+    - Khi chạy máy thật: Tự động dùng `localhost`.
+
+- **Độ tin cậy UDP**: Client UDP được cấu hình `Timeout 5s` để xử lý trường hợp mất gói tin đặc trưng của giao thức không kết nối.
 
 ## 7. Dữ liệu Test mẫu (Dành cho nhóm)
+
+| Giao thức	| Lệnh chạy (Docker) | Kết quả kỳ vọng |
+| :---  | :--- | :--- |
+| TCP |	Chọn menu `1` -> Phép toán `8` (Định thức) | Trả về giá trị số thực chính xác |
+| UDP |	Chọn menu `2` -> Phép toán `6` (Trace) |	Kết quả trả về tức thì (Low latency) |
+
 
 | Phép toán | Ma trận nhập vào | Kết quả mong đợi |
 | :--- | :---: | :---: |

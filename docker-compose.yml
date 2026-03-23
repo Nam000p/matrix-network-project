@@ -4,7 +4,8 @@ services:
     build: ./server
     container_name: matrix-server
     ports:
-      - "65432:65432"
+      - "65432:65432"      # TCP
+      - "65433:65433/udp"  # UDP
     networks:
       - matrix-net
 
@@ -12,7 +13,7 @@ services:
     build: ./client
     container_name: matrix-client
     environment:
-      - SERVER_HOST=matrix-server 
+      - SERVER_HOST=matrix-server
     depends_on:
       - matrix-server
     stdin_open: true
