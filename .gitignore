@@ -17,3 +17,8 @@ log/
 
 # Mac
 .DS_Store
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+bin/
