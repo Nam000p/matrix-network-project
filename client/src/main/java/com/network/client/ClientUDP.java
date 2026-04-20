@@ -58,27 +58,41 @@ public class ClientUDP {
 
     private static Request createRequest(int choice) {
         String op = switch(choice) {
-            case 1->"CONG"; 
-            case 2->"TRU"; 
-            case 3->"NHAN"; 
-            case 4->"NHAN_SCALAR";
-            case 5->"CHUYEN_VI"; 
-            case 6->"TRACE"; 
-            case 7->"DOI_XUNG"; 
-            case 8->"DINH_THUC"; 
-            case 10->"HANG"; 
-            default->"";
+            case 1 -> "CONG";
+            case 2 -> "TRU";
+            case 3 -> "NHAN";
+            case 4 -> "NHAN_SCALAR";
+            case 5 -> "CHUYEN_VI";
+            case 6 -> "TRACE";
+            case 7 -> "DOI_XUNG";
+            case 8 -> "DINH_THUC";
+            case 9 -> "NGHICH_DAO";
+            case 10 -> "HANG";
+            default -> "";
         };
+
+        if (op.isEmpty()) return null;
+
         try {
-            System.out.print("Nhap so hang: "); 
+            System.out.print("Nhap so hang: ");
             int r = Integer.parseInt(sc.nextLine());
-            System.out.print("Nhap so cot: "); 
+            System.out.print("Nhap so cot: ");
             int c = Integer.parseInt(sc.nextLine());
+
             double[][] m1 = inputMatrix(r, c, "A");
             double[][] m2 = (choice <= 3) ? inputMatrix(r, c, "B") : null;
-            double s = (choice == 4) ? Double.parseDouble(sc.nextLine()) : 0;
+
+            double s = 0;
+            if (choice == 4) {
+                System.out.print("Nhap gia tri vo huong: ");
+                s = Double.parseDouble(sc.nextLine());
+            }
+
             return new Request(op, m1, m2, s);
-        } catch (Exception e) { return null; }
+        } catch (Exception e) {
+            System.out.println("[-] Loi nhap lieu!");
+            return null;
+        }
     }
 
     private static double[][] inputMatrix(int r, int c, String name) {
@@ -92,18 +106,29 @@ public class ClientUDP {
     }
 
     private static void handleResponse(Response res) {
-        if(!"OK".equals(res.getStatus())) { 
-        	System.out.println("[-] Loi Server: " + res.getMessage()); 
-        	return; 
-        	}
-        System.out.println("[+] Ket qua UDP:");
-        if(res.getTrace() != null) {
-        	System.out.println("> So: " + res.getTrace());
+        if(!"OK".equals(res.getStatus())) {
+            System.out.println("[-] Loi Server: " + res.getMessage());
+            return;
         }
+
+        System.out.println("[+] Ket qua UDP:");
+
+        if(res.getMessage() != null && !res.getMessage().equals("Thanh cong")) {
+            System.out.println("> Thong bao: " + res.getMessage());
+        }
+
+        if(res.getIsSymmetric() != null) {
+            System.out.println("> Doi xung: " + (res.getIsSymmetric() ? "Co" : "Khong"));
+        }
+
+        if(res.getTrace() != null) {
+            System.out.println("> Gia tri so: " + res.getTrace());
+        }
+
         if(res.getResult() != null) {
             for(double[] row : res.getResult()) {
                 for(double v : row) {
-                	System.out.printf("%8.2f ", v);
+                    System.out.printf("%8.2f ", v);
                 }
                 System.out.println();
             }

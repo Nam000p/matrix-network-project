@@ -43,31 +43,49 @@ public class ServerUDP {
 	}
 
 	private static Response process(String jsonRequest) {
-		Response res = new Response();
-		try {
-			Request req = gson.fromJson(jsonRequest, Request.class);
-			Matrix a = new Matrix(req.getMat1());
-			res.setStatus("OK");
+    Response res = new Response();
+    try {
+        Request req = gson.fromJson(jsonRequest, Request.class);
+        Matrix a = new Matrix(req.getMat1());
+        res.setStatus("OK");
+        res.setMessage("Thanh cong");
 
-			switch (req.getOperation()) {
-			case "CONG" -> res.setResult(Matrix.cong(a, new Matrix(req.getMat2())).getData());
-			case "TRU" -> res.setResult(Matrix.tru(a, new Matrix(req.getMat2())).getData());
-			case "NHAN" -> res.setResult(Matrix.nhan(a, new Matrix(req.getMat2())).getData());
-			case "NHAN_SCALAR" -> res.setResult(Matrix.nhanScalar(a, req.getScalar()).getData());
-			case "CHUYEN_VI" -> res.setResult(a.chuyenVi().getData());
-			case "TRACE" -> res.setTrace(a.trace());
-			case "DOI_XUNG" -> res.setIsSymmetric(a.laDoiXung());
-			case "DINH_THUC" -> res.setTrace(a.dinhThuc());
-			case "HANG" -> res.setTrace((double) a.hang());
-			default -> {
-				res.setStatus("ERROR");
-				res.setMessage("Phep toan khong hop le");
-			}
-			}
-		} catch (Exception e) {
-			res.setStatus("ERROR");
-			res.setMessage("Loi: " + e.getMessage());
-		}
-		return res;
-	}
+        switch (req.getOperation()) {
+            case "CONG" -> res.setResult(Matrix.cong(a, new Matrix(req.getMat2())).getData());
+            case "TRU" -> res.setResult(Matrix.tru(a, new Matrix(req.getMat2())).getData());
+            case "NHAN" -> res.setResult(Matrix.nhan(a, new Matrix(req.getMat2())).getData());
+            case "NHAN_SCALAR" -> res.setResult(Matrix.nhanScalar(a, req.getScalar()).getData());
+            case "CHUYEN_VI" -> res.setResult(a.chuyenVi().getData());
+            case "TRACE" -> {
+                double tr = a.trace();
+                res.setTrace(tr);
+                res.setMessage(String.valueOf(tr));
+            }
+            case "DOI_XUNG" -> {
+                boolean isSym = a.laDoiXung();
+                res.setIsSymmetric(isSym);
+                res.setMessage(isSym ? "Ma tran doi xung" : "Ma tran khong doi xung");
+            }
+            case "DINH_THUC" -> {
+                double det = a.dinhThuc();
+                res.setTrace(det);
+                res.setMessage(String.valueOf(det));
+            }
+            case "NGHICH_DAO" -> res.setResult(a.nghichDao().getData());
+            case "HANG" -> {
+                double rank = (double) a.hang();
+                res.setTrace(rank);
+                res.setMessage(String.valueOf((int)rank));
+            }
+            default -> {
+                res.setStatus("ERROR");
+                res.setMessage("Phep toan khong hop le: [" + req.getOperation() + "]");
+            }
+        }
+    } catch (Exception e) {
+        res.setStatus("ERROR");
+        res.setMessage("Loi: " + e.getMessage());
+    }
+    return res;
+}
 }

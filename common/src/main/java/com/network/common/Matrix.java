@@ -145,7 +145,7 @@ public class Matrix {
 				}
 			}
 		}
-		return det;
+		return Math.round(det * 1e10) / 1e10;
 	}
 
 	// 9. Nghich dao (Gauss-Jordan)
